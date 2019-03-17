@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
-	"os"
 )
 
 const usage = `mydocker is a simple container runtime implementation.
@@ -12,7 +13,7 @@ const usage = `mydocker is a simple container runtime implementation.
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "mydocker"
+	app.Name = "godocker"
 	app.Usage = usage
 
 	app.Commands = []cli.Command{
