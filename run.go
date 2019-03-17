@@ -10,8 +10,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
-	parent, writePipe := container.NewParentProcess(tty)
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volumn string) {
+	parent, writePipe := container.NewParentProcess(tty, volumn)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -20,7 +20,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 		log.Error(err)
 	}
 	// use mydocker-cgroup as cgroup name
-	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	cgroupManager := cgroups.NewCgroupManager("godocker-cgroup")
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
@@ -31,7 +31,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 
 	mntURL := "/root/mnt/"
 	rootURL := "/root/"
-	container.DeleteWorkSpace(rootURL, mntURL)
+	container.DeleteWorkSpace(rootURL, mntURL, volumn)
 	os.Exit(0)
 }
 
