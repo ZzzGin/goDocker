@@ -27,11 +27,12 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volumn str
 
 	sendInitCommand(comArray, writePipe)
 
-	parent.Wait()
-
-	mntURL := "/root/mnt/"
-	rootURL := "/root/"
-	container.DeleteWorkSpace(rootURL, mntURL, volumn)
+	if tty {
+		parent.Wait()
+		mntURL := "/root/mnt/"
+		rootURL := "/root/"
+		container.DeleteWorkSpace(rootURL, mntURL, volumn)
+	}
 	os.Exit(0)
 }
 

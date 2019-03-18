@@ -19,6 +19,10 @@ var runCommand = cli.Command{
 			Name:  "ti",
 			Usage: "enable tty",
 		},
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "detach container",
+		},
 		cli.StringFlag{
 			Name:  "m",
 			Usage: "memory limit",
@@ -45,6 +49,12 @@ var runCommand = cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("ti")
+		detach := context.Bool("d")
+
+		// you can not use -ti and -d together
+		if tty && detach {
+			return fmt.Errorf("ti and d paramter can not both provided")
+		}
 
 		// pass the volume to Run
 		volume := context.String("v")
