@@ -60,7 +60,7 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 
 func recordContainerInfo(containerPID int, commandArray []string, containerName string) (string, error) {
 	id := randStringBytes(10)
-	createTime := time.Now().Format("2000-01-01 00:00:00")
+	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
 	if containerName == "" {
 		containerName = id
