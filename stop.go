@@ -78,5 +78,5 @@ func removeContainer(containerName string) {
 		log.Errorf("Remove file %s error %v", dirURL, err)
 		return
 	}
-	// container.DeleteWorkSpace(containerInfo.Volume, containerName)
+	container.DeleteWorkSpace(containerInfo.Volume, containerName)
 }

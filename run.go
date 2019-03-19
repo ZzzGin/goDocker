@@ -15,8 +15,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volumn string, containerName string) {
-	parent, writePipe := container.NewParentProcess(tty, volumn, containerName)
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string, containerName string, imageName string) {
+	parent, writePipe := container.NewParentProcess(tty, volume, containerName, imageName)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -26,7 +26,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volumn str
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName)
+	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, volume)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
@@ -43,10 +43,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volumn str
 	if tty {
 		parent.Wait()
 		deleteContainerInfo(containerName)
-
-		mntURL := "/root/mnt/"
-		rootURL := "/root/"
-		container.DeleteWorkSpace(rootURL, mntURL, volumn)
+		container.DeleteWorkSpace(volume, containerName) // be carefule!!!
 	}
 	os.Exit(0)
 }
@@ -58,7 +55,7 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName string) (string, error) {
+func recordContainerInfo(containerPID int, commandArray []string, containerName string, volume string) (string, error) {
 	id := randStringBytes(10)
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
@@ -72,6 +69,7 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName 
 		CreatedTime: createTime,
 		Status:      container.RUNNING,
 		Name:        containerName,
+		Volume:      volume,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)
