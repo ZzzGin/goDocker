@@ -44,6 +44,10 @@ var runCommand = cli.Command{
 			Name:  "name",
 			Usage: "container name",
 		},
+		cli.StringSliceFlag{
+			Name:  "e",
+			Usage: "set environment",
+		},
 	},
 	Action: func(context *cli.Context) error {
 		if len(context.Args()) < 1 {
@@ -74,7 +78,9 @@ var runCommand = cli.Command{
 			CpuShare:    context.String("cpushare"),
 		}
 		containerName := context.String("name")
-		Run(tty, cmdArray, resConf, volume, containerName, imageName)
+
+		envSlice := context.StringSlice("e")
+		Run(tty, cmdArray, resConf, volume, containerName, imageName, envSlice)
 		return nil
 	},
 }

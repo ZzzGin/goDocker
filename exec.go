@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"godocker/container"
-	"io/ioutil"
 	"encoding/json"
-	"strings"
-	"os/exec"
-	"os"
+	"fmt"
+	"godocker/container"
 	_ "godocker/nsenter"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"strings"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const ENV_EXEC_PID = "mydocker_pid"
@@ -32,6 +33,8 @@ func ExecContainer(containerName string, comArray []string) {
 
 	os.Setenv(ENV_EXEC_PID, pid)
 	os.Setenv(ENV_EXEC_CMD, cmdStr)
+	containerEnvs := getEnvsByPid(pid)
+	cmd.Env = append(os.Environ(), containerEnvs...)
 
 	if err := cmd.Run(); err != nil {
 		log.Errorf("Exec container %s error %v", containerName, err)
@@ -50,4 +53,16 @@ func getContainerPidByName(containerName string) (string, error) {
 		return "", err
 	}
 	return containerInfo.Pid, nil
+}
+
+func getEnvsByPid(pid string) []string {
+	path := fmt.Sprintf("/proc/%s/environ", pid)
+	contentBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Errorf("Read file %s error %v", path, err)
+		return nil
+	}
+	//env split by \u0000
+	envs := strings.Split(string(contentBytes), "\u0000")
+	return envs
 }
