@@ -28,7 +28,8 @@ type ContainerInfo struct {
 	Command     string `json:"command"`    //容器内init运行命令
 	CreatedTime string `json:"createTime"` //创建时间
 	Status      string `json:"status"`     //容器的状态
-	Volume      string `json:"volume"`
+	Volume      string `json:"volume"`	   //container's volume
+	PortMapping []string `json:"portmapping"` //端口映射
 }
 
 func NewParentProcess(tty bool, volumn string, containerName string, imageName string, envSlice []string) (*exec.Cmd, *os.File) {

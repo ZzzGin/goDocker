@@ -27,7 +27,9 @@ func ListContainers() {
 			log.Errorf("Get container info error %v", err)
 			continue
 		}
-		containers = append(containers, tmpContainer)
+		if tmpContainer != nil {
+			containers = append(containers, tmpContainer)
+		}
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 12, 1, 3, ' ', 0)
@@ -49,6 +51,9 @@ func ListContainers() {
 
 func getContainerInfo(file os.FileInfo) (*container.ContainerInfo, error) {
 	containerName := file.Name()
+	if containerName == "network" {
+		return nil, nil
+	}
 	configFileDir := fmt.Sprintf(container.DefaultInfoLocation, containerName)
 	configFileDir = configFileDir + container.ConfigName
 	content, err := ioutil.ReadFile(configFileDir)

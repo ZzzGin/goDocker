@@ -6,6 +6,7 @@ import (
 	"godocker/cgroups"
 	"godocker/cgroups/subsystems"
 	"godocker/container"
+	"godocker/network"
 	"math/rand"
 	"os"
 	"strconv"
@@ -15,12 +16,12 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string, containerName string, imageName string, envSlice []string) {
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume string, containerName string, imageName string, envSlice []string, nw string, portmapping []string) {
 	containerID := randStringBytes(10)
 	if containerName == "" {
 		containerName = containerID
 	}
-	
+
 	parent, writePipe := container.NewParentProcess(tty, volume, containerName, imageName, envSlice)
 	if parent == nil {
 		log.Errorf("New parent process error")
@@ -43,6 +44,20 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
 
+	if nw != "" {
+		// config container network
+		network.Init()
+		containerInfo := &container.ContainerInfo{
+			Id:          containerID,
+			Pid:         strconv.Itoa(parent.Process.Pid),
+			Name:        containerName,
+			PortMapping: portmapping,
+		}
+		if err := network.Connect(nw, containerInfo); err != nil {
+			log.Errorf("Error Connect Network %v", err)
+			return
+		}
+	}
 	sendInitCommand(comArray, writePipe)
 
 	if tty {
