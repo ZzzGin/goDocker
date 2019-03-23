@@ -32,13 +32,13 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, volume)
+	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
 	}
 
-	// use mydocker-cgroup as cgroup name
+	// use "godocker-cgroup" as cgroup name
 	cgroupManager := cgroups.NewCgroupManager("godocker-cgroup")
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
@@ -63,9 +63,9 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, volume str
 	if tty {
 		parent.Wait()
 		deleteContainerInfo(containerName)
-		container.DeleteWorkSpace(volume, containerName) // be carefule!!!
+		container.DeleteWorkSpace(volume, containerName)
 	}
-	os.Exit(0)
+	// os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
@@ -75,13 +75,9 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName string, volume string) (string, error) {
-	id := randStringBytes(10)
+func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
-	if containerName == "" {
-		containerName = id
-	}
 	containerInfo := &container.ContainerInfo{
 		Id:          id,
 		Pid:         strconv.Itoa(containerPID),
